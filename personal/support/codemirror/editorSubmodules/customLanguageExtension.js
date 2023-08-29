@@ -20,7 +20,7 @@ export let customLanguageExtension = function customLanguageExtension(grammer) {
 };
 
 export let parseGrammerString = function parseGrammerString(grammerString) {
-	let focusString = grammerString;
+	let focusString = grammerString; // What is printed in an error log.  Reassigned as we parse.
 	try {
 		let grammer = JSON.parse(grammerString);
 		for (const key in grammer) {

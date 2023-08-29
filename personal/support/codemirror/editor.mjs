@@ -1,6 +1,6 @@
 import { awesome_line_wrapping_plugin } from './editorSubmodules/awesome-line-wrapping'
 import { customLanguageExtension, parseGrammerString } from './editorSubmodules/customLanguageExtension'
-import { history, historyKeymap, redo, indentWithTab } from '@codemirror/commands'
+import { history, historyKeymap, redo, insertTab, indentMore, indentLess, insertNewlineAndIndent } from '@codemirror/commands'
 import { bracketMatching, indentUnit } from '@codemirror/language'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { dropCursor, EditorView, highlightActiveLine, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view'
@@ -22,15 +22,19 @@ const extensions = [
 	bracketMatching(),
 	highlightActiveLine(),
 	highlightSelectionMatches(),
-	indentUnit.of("	"),
+	indentUnit.of('\t'),
 	EditorView.lineWrapping,
 	awesome_line_wrapping_plugin,
 	languageExtension,
 	keymap.of([
 		historyKeymap,
-		indentWithTab,
 		...searchKeymap,
+		{ key: 'Tab', run: insertTab, preventDefault: true },
+		{ key: 'Ctrl-Tab', run: indentMore, preventDefault: true },
+		{ key: 'Ctrl-q', run: indentMore, preventDefault: true },
+		{ key: 'Shift-Tab', run: indentLess, preventDefault: true },
 		{ key: 'Ctrl-Shift-z', run: redo },
+		{ key: 'Enter', run: insertNewlineAndIndent },
 	]),
 ];
 
