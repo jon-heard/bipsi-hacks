@@ -841,18 +841,21 @@ function setupEditorPlugin() {
 		let startChar = codeMirror.editor.state.selection.ranges[0].from;
 		let endChar = codeMirror.editor.state.selection.ranges[0].from;
 		startChar = inkPageText.lastIndexOf('\n', startChar) + 1;
-		endChar = inkPageText.indexOf('\n', endChar)
+		endChar = inkPageText.indexOf('\n', endChar);
+		if (endChar == -1) {
+			endChar = inkPageText.length;
+		}
 		const line = inkPageText.slice(startChar, endChar);
-		const tagStart = line.match(/(?<=[^\\])#/)?.index;
-		let text = tagStart === undefined ? line : line.slice(0, tagStart);
+		const tagStart = line.match(/(?<=[^\\])#/)?.index || line.length;
+		let text = line.slice(0, tagStart);
 		text = text.replaceAll(/<to>.*?<\/to>/g, "").trim(); // Remove <to> blocks
-		let tags = tagStart === undefined ? [] : line.slice(tagStart+1).split(/(?<=[^\\])#/g).filter(Boolean).map(tag => tag.trim());
+		let tags = line.slice(tagStart+1).split(/(?<=[^\\])#/g).filter(Boolean).map(tag => tag.trim());
 		// parse the Tags
 		const textMods = FIELDS_badEventOk(getInkscriptIntegrationEvent(), 'text-mod', 'javascript');
 		window.TEXT = text;
 		window.TAGS = tags;
 		textMods.forEach(mod => {
-            (new Function("", mod))();
+            (new AsyncFunction("", mod))();
 		});
 		text = window.TEXT;
 		tags = window.TAGS;
@@ -874,15 +877,14 @@ function setupEditorPlugin() {
 	}
 	dialoguePreviewEditorButton_check.addEventListener('change', onDialoguePreviewEditorButtonChanged);
 
-	const orig_EventEditor_getSelections = EventEditor.prototype.getSelections;
-	EventEditor.prototype.getSelections = function(data = undefined) {
+	wrap.splice(EventEditor.prototype, 'getSelections', function getSelections(original, ...args) {
 		if (window.previewEvent) {
 			return { event: window.previewEvent, field: previewEvent.fields[0], fieldIndex: 0 };
 		} else {
-			let result = orig_EventEditor_getSelections.call(this, data);
-			return result;
+			return original.call(this, ...args);
 		}
-	};
+	});
+
 
 	// Added the check for previewEvent variable
 	Object.defineProperty(EDITOR.eventEditor, 'showDialoguePreview', {

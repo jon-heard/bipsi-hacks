@@ -290,12 +290,10 @@ wrap.before(BipsiPlayback.prototype, 'render', () => {
 	window.progressClocks.forEach(ui => ui.update());
 });
 
-const orig_drawEventLayer = window.drawEventLayer;
-window.drawEventLayer = (destination, tileset, tileToFrame, palette, events) => {
-	orig_drawEventLayer(destination, tileset, tileToFrame, palette, events);
+wrap.after(window, 'drawEventLayer', (destination) => {
 	if (destination !== TEMP_ROOM) return;
 	window.progressClocks.forEach(ui => ui.render(destination));
-};
+});
 
 BipsiPlayback.prototype.addProgressClock = function addProgressClock() {
 	window.progressClocks.push(new ProgressClock());
