@@ -158,22 +158,17 @@ function setupTilemapImporter() {
 
 	async function importTilesetFile() {
         // ask the browser to provide a file
-        const [file] = await maker.pickFiles('.png,.txt');
+        const [file] = await maker.pickFiles('.png,.bitsy,.txt');
 		if (!file) {
 			return;
 		}
 		let tilesData;
-		switch (file.type) {
-			case 'text/plain':
-				tilesData = await readBitsyTilemap(file);
-				break;
-			case 'image/png':
-				tilesData = await readBipsiTilemap(file);
-				break;
+		if (file.name.endsWith('.png')) {
+			tilesData = await readBipsiTilemap(file);
+		} else if (file.name.endsWith('.bitsy') || file.name.endsWith('.txt')) {
+			tilesData = await readBitsyTilemap(file);
 		}
-		if (!tilesData) {
-			return;
-		}
+		if (!tilesData) return;
 		await EDITOR.stateManager.makeChange(async (data) => {
 			// Update data structures to fit imported tilemap
 			const framesToRender = {};
